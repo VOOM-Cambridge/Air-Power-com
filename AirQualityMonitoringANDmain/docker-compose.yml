@@ -1,0 +1,101 @@
+version: "2"
+
+services:
+    timeseries-db:
+        extends:
+            file: timeseries_sds/app.yml
+            service: db
+        networks:
+            internal:
+                aliases:
+                    - timeseries-db.docker.local
+        logging:
+            driver: syslog
+            options:
+                tag: docker-timeseries-db
+        restart: unless-stopped
+        depends_on:
+            - "mqtt_broker"
+    timeseries-db-input-air:
+        extends:
+            file: timeseries_sds/app.yml
+            service: telegraf_air
+        networks:
+            internal:
+                aliases:
+                    - timeseries-input-air.docker.local
+        logging:
+            driver: syslog
+            options:
+                tag: docker-timeseries-input
+        restart: unless-stopped
+        depends_on:
+            - "timeseries-db"
+            - "mqtt_broker"
+    timeseries-db-input-power:
+        extends:
+            file: timeseries_sds/app.yml
+            service: telegraf_power
+        networks:
+            internal:
+                aliases:
+                    - timeseries-input-power.docker.local
+        logging:
+            driver: syslog
+            options:
+                tag: docker-timeseries-input
+        restart: unless-stopped
+        depends_on:
+            - "timeseries-db"
+            - "mqtt_broker"
+    dashboard:
+        extends:
+            file: dashboard_ui/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - dashboard-ui.docker.local
+        logging:
+            driver: syslog
+            options:
+                tag: docker-dashboard-ui
+        restart: unless-stopped
+        depends_on:
+            - "mqtt_broker"
+ 
+   
+    airquality-collection:
+        extends:
+            file: airquality_dc/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - airquality-dc.docker.local
+        logging:
+            driver: syslog
+            options:
+                tag: docker-current-dc
+        restart: unless-stopped
+        depends_on:
+            - "mqtt_broker"
+ 
+
+    mqtt_broker:
+        extends:
+            file: mqtt_broker/app.yml
+            service: app
+        restart: unless-stopped
+        logging:
+            driver: syslog
+            options:
+                tag: docker-mqtt-broker
+        networks:
+            internal:
+                aliases:
+                    - mqtt.docker.local
+
+networks:
+     internal:
+         name: shoestring-internal

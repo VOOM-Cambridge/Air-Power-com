@@ -1,0 +1,34 @@
+version: '2'
+
+services:
+    db:
+        image: influxdb:2.6
+        command: "./entrypoint.sh --reporting-disabled"
+        volumes:
+          - ./data/influxdb2:/var/lib/influxdb2:rw
+        ports:
+          - "8086:8086"
+        environment: 
+          - DOCKER_INFLUXDB_INIT_MODE=setup
+          - DOCKER_INFLUXDB_INIT_USERNAME=${DB_ADMIN_USER}
+          - DOCKER_INFLUXDB_INIT_PASSWORD=${DB_ADMIN_INITIAL_PASSWORD}
+          - DOCKER_INFLUXDB_INIT_ORG=${DB_ORG}
+          - DOCKER_INFLUXDB_INIT_BUCKET=${DB_BUCKET_AIR}
+          - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DB_ADMIN_INITIAL_TOKEN}
+    telegraf_air:
+        image: telegraf:1.21
+        volumes:
+          - ./config/telegraf_air.conf:/etc/telegraf/telegraf.conf
+        environment: 
+          - DOCKER_INFLUXDB_ORG=${DB_ORG}
+          - DOCKER_INFLUXDB_BUCKET=${DB_BUCKET_AIR}
+          - DOCKER_CURRENT_INFLUXDB_TOKEN=${DB_ADMIN_INITIAL_TOKEN}
+    telegraf_power:
+        image: telegraf:1.21
+        volumes:
+          - ./config/telegraf_power.conf:/etc/telegraf/telegraf.conf
+        environment: 
+          - DOCKER_INFLUXDB_ORG=${DB_ORG}
+          - DOCKER_INFLUXDB_BUCKET=${DB_BUCKET_POWER}
+          - DOCKER_CURRENT_INFLUXDB_TOKEN=${DB_ADMIN_INITIAL_TOKEN}
+ 

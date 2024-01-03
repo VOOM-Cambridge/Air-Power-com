@@ -1,0 +1,22 @@
+version: "2"
+
+services:
+   
+    current-collection:
+        extends:
+            file: current_dc/app.yml
+            service: app
+        networks:
+            internal:
+                aliases:
+                    - current-dc.docker.local
+        logging:
+            driver: syslog
+            options:
+                tag: docker-current-dc
+        restart: unless-stopped
+
+networks:
+     internal:
+         external: true
+         name: shoestring-internal
